@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Waypoint Editor</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --panel: rgba(30,30,30,0.9);
+      --text: #f0f0f0;
+      --accent: #3fa9f5;
+      --border: #333;
+    }
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:sans-serif;overflow:hidden}
+    #map{height:100%;width:100%}
+
+    .top-buttons{
+      position:absolute; top:10px; right:10px;
+      display:flex; gap:8px; z-index:1000;
+      transition:right 0.3s ease;
+    }
+    .top-buttons button{
+      background:#2a2a2a; color:var(--text);
+      border:1px solid var(--border); border-radius:8px;
+      padding:6px 12px; cursor:pointer; font-size:14px;
+    }
+    .top-buttons button:hover{ background:#3a3a3a; }
+
+    /* Sidebar */
+    .sidebar{
+      position:absolute; top:0; right:-360px;
+      height:100%; width:340px; z-index:900;
+      background:var(--panel); backdrop-filter:blur(12px);
+      border-left:1px solid var(--border);
+      box-shadow:-12px 0 30px rgba(0,0,0,0.4);
+      transition:right 0.3s ease;
+      display:flex; flex-direction:column;
+      padding:12px; overflow-y:auto;
+    }
+    .sidebar.open{ right:0; }
+    .sidebar-header{
+      padding:8px 12px; margin:-4px -12px 8px -12px;
+      border-bottom:1px solid var(--border);
+    }
+    /* CHANGED: header color now same as text */
+    .sidebar-header h2{ margin:0; font-size:18px; color:var(--text) }
+
+    .waypoint{
+      border-bottom:1px solid var(--border);
+      padding:8px 0;
+    }
+    .waypoint h4{ margin:0 0 4px; font-size:15px; color:var(--accent) }
+    .waypoint small{ display:block; color:#aaa }
+    .waypoint .hint{ font-size:12px; color:#ccc; margin-top:6px }
+    .waypoint button{
+      margin-top:6px; margin-right:6px;
+      background:#2a2a2a; color:var(--text);
+      border:1px solid var(--border); border-radius:6px;
+      padding:4px 8px; font-size:12px; cursor:pointer;
+    }
+    .waypoint button:hover{ background:#3a3a3a }
+
+    /* CHANGED: higher-contrast action buttons */
+    .waypoint button.edit{
+      background:#2563eb; /* blue */
+      border-color:#1e3a8a;
+      color:#fff;
+    }
+    .waypoint button.edit:hover{ background:#1d4ed8; }
+
+    .waypoint button.delete{
+      background:#b91c1c; /* red */
+      border-color:#7f1d1d;
+      color:#fff;
+    }
+    .waypoint button.delete:hover{ background:#991b1b; }
+
+    /* Minimal DnD feedback */
+    .waypoint.dragging{ opacity:0.6; }
+
+    /* Modal */
+    .modal{
+      position:fixed; inset:0; display:none;
+      align-items:center; justify-content:center;
+      background:rgba(0,0,0,0.6); z-index:99999;
+    }
+    .modal-content{
+      width:320px; max-width:92vw; background:#2a2a2a; color:var(--text);
+      border-radius:10px; padding:16px; border:1px solid var(--border);
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    }
+    .modal-content input, .modal-content textarea{
+      width:100%; box-sizing:border-box;
+      border-radius:6px; border:1px solid #444; padding:8px;
+      background:#1e1e1e; color:var(--text);
+    }
+    .modal-content textarea{
+      resize:vertical; min-height:64px; max-height:40vh; overflow:auto;
+    }
+    .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:8px }
+    .modal-actions button{
+      background:#2a2a2a; color:var(--text); border:1px solid var(--border);
+      padding:6px 10px; border-radius:6px; cursor:pointer;
+    }
+    .modal-actions button:hover{ background:#3a3a3a }
+    /* CHANGED: modal Save/Cancel themed colors */
+    .modal-actions .save{
+      background:#166534; border-color:#14532d; color:#eaffea;
+    }
+    .modal-actions .save:hover{ background:#15803d; }
+    .modal-actions .cancel{
+      background:#7f1d1d; border-color:#701a1a; color:#ffecec;
+    }
+    .modal-actions .cancel:hover{ background:#991b1b; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="top-buttons" id="topBtns">
+    <button id="importBtn">Import JSON</button>
+    <button id="exportBtn">Export JSON</button>
+    <button id="recenterBtn" style="display:none;">Re-center</button>
+    <button id="toggleSidebar">☰ List</button>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><h2>Waypoints</h2></div>
+    <div id="sidebarList" aria-live="polite"></div>
+  </aside>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-label="Edit waypoint">
+      <h3 style="margin-top:0">Edit Waypoint</h3>
+      <label style="display:block;margin-bottom:6px">Name
+        <input id="wpName" type="text" />
+      </label>
+      <label style="display:block;margin-bottom:6px">Hint
+        <textarea id="wpHint"></textarea>
+      </label>
+      <div class="modal-actions">
+        <!-- CHANGED: add classes for themed colors -->
+        <button id="saveModal" class="save">Save</button>
+        <button id="cancelModal" class="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([0,0],2);
+    const satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles © Esri' }
+    ).addTo(map);
+    const osm = L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { attribution:'© OSM' }
+    );
+    L.control.layers({ Satellite: satellite, Streets: osm }, null, { position:'topleft', collapsed:true }).addTo(map);
+
+    let waypoints = []; // { name, hint, lat, lon, marker }
+    let polyline = L.polyline([], { color: '#3fa9f5' }).addTo(map);
+    let currentMarker=null, accuracyCircle=null;
+    let editingIndex=null;
+    let dragFromIndex=null; // for sidebar reordering
+
+    // Geolocation + recenter visibility
+    map.locate({setView:true, maxZoom:16, watch:true});
+    const recenterBtn = document.getElementById('recenterBtn');
+    map.on('locationfound', e=>{
+      if(!currentMarker){
+        currentMarker = L.circleMarker(e.latlng, {
+          radius:8, fillColor:"#4285F4", color:"#fff", weight:2, fillOpacity:1
+        }).addTo(map);
+        accuracyCircle = L.circle(e.latlng, {radius:e.accuracy, color:"#4285F4", weight:1, fillOpacity:0.1}).addTo(map);
+      } else {
+        currentMarker.setLatLng(e.latlng);
+        accuracyCircle.setLatLng(e.latlng).setRadius(e.accuracy);
+      }
+      checkRecenter();
+    });
+    function checkRecenter(){
+      if(!currentMarker) return;
+      const inView = map.getBounds().contains(currentMarker.getLatLng());
+      recenterBtn.style.display = inView ? 'none' : 'inline-block';
+    }
+    recenterBtn.onclick=()=>{ if(currentMarker){ map.setView(currentMarker.getLatLng(),16); checkRecenter(); } };
+    map.on('moveend', checkRecenter);
+    map.on('zoomend', checkRecenter);
+
+    // Add waypoint on map click
+    map.on('click', e=>{
+      const wp={name:"Waypoint "+(waypoints.length+1), hint:"", lat:e.latlng.lat, lon:e.latlng.lng};
+      const marker=L.marker(e.latlng,{draggable:true}).addTo(map);
+
+      // Live updates while dragging
+      marker.on('drag dragend', ()=>{
+        const p = marker.getLatLng();
+        wp.lat=p.lat; wp.lon=p.lng;
+        update();
+      });
+
+      marker.on('click', ()=>{
+        const idx = waypoints.findIndex(x=>x.marker===marker);
+        if(idx>=0) openEdit(idx);
+      });
+
+      wp.marker=marker;
+      waypoints.push(wp);
+      update();
+    });
+
+    function update(){
+      polyline.setLatLngs(waypoints.map(w=>[w.lat,w.lon]));
+      renderSidebar();
+    }
+
+    function computeDistance(lat1,lon1,lat2,lon2){
+      const R=6371000,toRad=x=>x*Math.PI/180;
+      const dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1);
+      const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+      return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    }
+    function computeBearing(lat1,lon1,lat2,lon2){
+      const toRad=x=>x*Math.PI/180,toDeg=x=>x*180/Math.PI;
+      const dLon=toRad(lon2-lon1);
+      const y=Math.sin(dLon)*Math.cos(toRad(lat2));
+      const x=Math.cos(toRad(lat1))*Math.sin(toRad(lat2))-Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLon);
+      return (toDeg(Math.atan2(y,x))+360)%360;
+    }
+    function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    function renderSidebar(){
+      const list=document.getElementById('sidebarList');
+      list.innerHTML="";
+      waypoints.forEach((w,i)=>{
+        const div=document.createElement('div');
+        div.className="waypoint";
+        div.setAttribute('draggable','true');
+        div.dataset.index=i;
+
+        let info=`Lat: ${w.lat.toFixed(5)}, Lon: ${w.lon.toFixed(5)}`;
+        if(i<waypoints.length-1){
+          const n=waypoints[i+1];
+          const d=computeDistance(w.lat,w.lon,n.lat,n.lon);
+          const b=computeBearing(w.lat,w.lon,n.lat,n.lon);
+          info+=`<br>Next: ${(d/1609.34).toFixed(2)} mi, Heading: ${b.toFixed(0)}°`;
+        }
+
+        div.innerHTML=`
+          <h4>${w.name}</h4>
+          <small>${info}</small>
+          ${w.hint?`<div class="hint">Hint: ${escapeHtml(w.hint)}</div>`:""}
+          <div style="margin-top:6px">
+            <!-- CHANGED: add classes for contrast -->
+            <button class="edit" onclick="editWp(${i})">Edit</button>
+            <button class="delete" onclick="delWp(${i})">Delete</button>
+          </div>
+        `;
+
+        // Drag-and-drop reordering (unchanged logic)
+        div.addEventListener('dragstart', (e)=>{
+          dragFromIndex = i;
+          div.classList.add('dragging');
+          try { e.dataTransfer.setData('text/plain', String(i)); } catch(_){}
+          e.dataTransfer.effectAllowed='move';
+        });
+        div.addEventListener('dragend', ()=>{
+          dragFromIndex = null;
+          div.classList.remove('dragging');
+        });
+        div.addEventListener('dragover', (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+        div.addEventListener('drop', (e)=>{
+          e.preventDefault();
+          let from = dragFromIndex;
+          if(from===null){
+            const dt = e.dataTransfer.getData('text/plain');
+            if(dt) from = parseInt(dt,10);
+          }
+          const to = parseInt(div.dataset.index,10);
+          if(isNaN(from)||isNaN(to)||from===to) return;
+          const moved = waypoints.splice(from,1)[0];
+          waypoints.splice(to,0,moved);
+          update();
+        });
+
+        list.appendChild(div);
+      });
+    }
+
+    // Edit modal
+    function openEdit(i){
+      editingIndex=i;
+      document.getElementById('wpName').value=waypoints[i].name||"";
+      document.getElementById('wpHint').value=waypoints[i].hint||"";
+      document.getElementById('modal').style.display='flex';
+    }
+    function editWp(i){ openEdit(i); }
+    function delWp(i){
+      map.removeLayer(waypoints[i].marker);
+      waypoints.splice(i,1);
+      update();
+    }
+    window.editWp=editWp;
+    window.delWp=delWp;
+
+    document.getElementById('saveModal').onclick=()=>{
+      if(editingIndex!==null){
+        waypoints[editingIndex].name=document.getElementById('wpName').value;
+        waypoints[editingIndex].hint=document.getElementById('wpHint').value;
+        update();
+      }
+      editingIndex=null;
+      document.getElementById('modal').style.display='none';
+    };
+    document.getElementById('cancelModal').onclick=()=>{ editingIndex=null; document.getElementById('modal').style.display='none'; };
+    document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal'){ editingIndex=null; e.currentTarget.style.display='none'; } });
+
+    // Sidebar toggle + button slide
+    const sidebar=document.getElementById('sidebar');
+    const topBtns=document.getElementById('topBtns');
+    document.getElementById('toggleSidebar').onclick=()=>{
+      sidebar.classList.toggle('open');
+      topBtns.style.right=sidebar.classList.contains('open')?"370px":"10px";
+    };
+
+    // Import/Export JSON
+    document.getElementById('importBtn').onclick=()=>{
+      const inp=document.createElement('input');
+      inp.type='file'; inp.accept='.json';
+      inp.onchange=()=>{
+        const reader=new FileReader();
+        reader.onload=()=>{
+          try{
+            const arr=JSON.parse(reader.result);
+            waypoints.forEach(w=>map.removeLayer(w.marker));
+            waypoints=[];
+            arr.forEach(d=>{
+              const wp={name:d.name||"", hint:d.hint||"", lat:d.lat, lon:d.lon};
+              const marker=L.marker([wp.lat,wp.lon],{draggable:true}).addTo(map);
+              marker.on('drag dragend', ()=>{ const p=marker.getLatLng(); wp.lat=p.lat; wp.lon=p.lng; update(); });
+              marker.on('click', ()=>{ const idx=waypoints.findIndex(x=>x.marker===marker); if(idx>=0) openEdit(idx); });
+              wp.marker=marker;
+              waypoints.push(wp);
+            });
+            update();
+          }catch(e){ alert('Invalid JSON'); }
+        };
+        reader.readAsText(inp.files[0]);
+      };
+      inp.click();
+    };
+    document.getElementById('exportBtn').onclick=()=>{
+      const data=waypoints.map(w=>({name:w.name,hint:w.hint,lat:w.lat,lon:w.lon}));
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='waypoints.json'; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // initial recenter check
+    setTimeout(()=>checkRecenter(),500);
+  </script>
+</body>
+</html>
