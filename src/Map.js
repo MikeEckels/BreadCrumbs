@@ -31,13 +31,18 @@ export class MapController {
     this.map.on("locationfound", e => {
       if (!this.currentMarker) {
         this.currentMarker = L.circleMarker(e.latlng, {
-          radius: 8, fillColor: "#4285F4",
-          color: "#fff", weight: 2, fillOpacity: 1
+          radius: 8,
+          fillColor: "#4285F4",
+          color: "#fff",
+          weight: 2,
+          fillOpacity: 1
         }).addTo(this.map);
 
         this.accuracyCircle = L.circle(e.latlng, {
-          radius: e.accuracy, color: "#4285F4",
-          weight: 1, fillOpacity: 0.1
+          radius: e.accuracy,
+          color: "#4285F4",
+          weight: 1,
+          fillOpacity: 0.1
         }).addTo(this.map);
       } else {
         this.currentMarker.setLatLng(e.latlng);

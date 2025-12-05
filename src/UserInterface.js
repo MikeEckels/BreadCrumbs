@@ -7,7 +7,7 @@ export class UIController {
     this.modal = modal;
 
     this.sidebar = document.getElementById("sidebar");
-    this.listEl = document.getElementById("sidebarList");
+    this.sideList = document.getElementById("sidebarList");
     this.topBtns = document.getElementById("topBtns");
 
     waypoints.onListChanged = () => this.render();
@@ -23,8 +23,7 @@ export class UIController {
   wireButtons() {
     document.getElementById("toggleSidebar").onclick = () => {
       this.sidebar.classList.toggle("open");
-      this.topBtns.style.right = this.sidebar.classList.contains("open")
-        ? "370px" : "10px";
+      this.topBtns.style.right = this.sidebar.classList.contains("open") ? "370px" : "10px";
     };
 
     document.getElementById("recenterBtn").onclick = () => {
@@ -39,7 +38,7 @@ export class UIController {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "waypoints.json";
+      a.download = "BreadCrumbs.json";
       a.click();
       URL.revokeObjectURL(url);
     };
@@ -71,7 +70,7 @@ export class UIController {
   }
 
   render() {
-    this.listEl.innerHTML = "";
+    this.sideList.innerHTML = "";
 
     this.waypoints.list.forEach((w, i) => {
       const div = document.createElement("div");
@@ -120,7 +119,7 @@ export class UIController {
           this.waypoints.reorder(from, to);
       });
 
-      this.listEl.appendChild(div);
+      this.sideList.appendChild(div);
     });
   }
 }

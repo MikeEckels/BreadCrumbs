@@ -1,24 +1,18 @@
 export function computeDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000;
+  const earthRadius = 6371000;
   const toRad = x => x * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const diffLat = toRad(lat2 - lat1);
+  const diffLon = toRad(lon2 - lon1);
+  const angularDist = Math.sin(diffLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(diffLon / 2) ** 2;
+  return earthRadius * 2 * Math.atan2(Math.sqrt(angularDist), Math.sqrt(1 - angularDist));
 }
 
 export function computeBearing(lat1, lon1, lat2, lon2) {
   const toRad = x => x * Math.PI / 180;
   const toDeg = x => x * 180 / Math.PI;
-  const dLon = toRad(lon2 - lon1);
-  const y = Math.sin(dLon) * Math.cos(toRad(lat2));
-  const x =
-    Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
-    Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+  const diffLon = toRad(lon2 - lon1);
+  const y = Math.sin(diffLon) * Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(diffLon);
 
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 }
