@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>BreadCrumbs</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="./styles/style.css"/>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div class="top-buttons" id="topBtns">
+    <button id="importBtn">Import JSON</button>
+    <button id="exportBtn">Export JSON</button>
+    <button id="recenterBtn" style="display:none;">Re-center</button>
+    <button id="toggleSidebar">☰ List</button>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><h2>Waypoints</h2></div>
+    <div id="sidebarList" aria-live="polite"></div>
+  </aside>
+
+  <div class="modal" id="modal">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-label="Edit waypoint">
+      <h3 style="margin-top:0">Edit Waypoint</h3>
+      <label>Name
+        <input id="wpName" type="text"/>
+      </label>
+      <label>Hint
+        <textarea id="wpHint"></textarea>
+      </label>
+      <div class="modal-actions">
+        <button id="saveModal" class="save">Save</button>
+        <button id="cancelModal" class="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./src/Main.js"></script>
+</body>
+</html>

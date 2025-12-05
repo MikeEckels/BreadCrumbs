@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "name": "BreadCrumbs",
+            "request": "launch",
+            "preLaunchTask": "liveserver",
+            "url": "http://localhost:5500",
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": true,
+        }
+    ]
+}

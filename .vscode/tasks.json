@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "liveserver",
+            "type": "shell",
+            "command": "${command:extension.liveServer.goOnline}",
+            "presentation": { "reveal": "silent" },
+            "problemMatcher": []
+        }
+    ]
+}
