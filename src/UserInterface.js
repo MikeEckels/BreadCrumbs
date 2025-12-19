@@ -38,7 +38,7 @@ export class UIController {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "BreadCrumbs.json";
+      a.download = "Lantern.json";
       a.click();
       URL.revokeObjectURL(url);
     };
