@@ -43,7 +43,7 @@ export class UIController {
       URL.revokeObjectURL(url);
     };
 
-    document.getElementById("importBtn").onclick = () => {
+    document.getElementById("importLantern").onclick = () => {
       const inp = document.createElement("input");
       inp.type = "file";
       inp.accept = ".json";
@@ -51,7 +51,7 @@ export class UIController {
         const reader = new FileReader();
         reader.onload = () => {
           try {
-            this.waypoints.importData(JSON.parse(reader.result));
+            this.waypoints.importLantern(JSON.parse(reader.result));
           } catch {
             alert("Invalid JSON");
           }
@@ -59,6 +59,28 @@ export class UIController {
         reader.readAsText(inp.files[0]);
       };
       inp.click();
+    };
+
+    document.getElementById("importBC").onclick = () => {
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.accept = ".json";
+      inp.onchange = () => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            this.waypoints.importBC(JSON.parse(reader.result));
+          } catch {
+            alert("Invalid JSON");
+          }
+        };
+        reader.readAsText(inp.files[0]);
+      };
+      inp.click();
+    };
+
+    document.getElementById("clearBC").onclick = () => {
+      this.waypoints.clearBC();
     };
   }
 

@@ -18,6 +18,7 @@ export class MapController {
     }).addTo(this.map);
 
     this.polyline = L.polyline([], { color: "#3fa9f5" }).addTo(this.map);
+    this.bcPolyline = L.polyline([], { color: "#222", weight: 4, opacity: 0.9, dashArray: "6,6"}).addTo(this.map);
 
     this.currentMarker = null;
     this.accuracyCircle = null;
@@ -53,5 +54,9 @@ export class MapController {
 
   updatePolyline(latlngs) {
     this.polyline.setLatLngs(latlngs);
+  }
+
+  updateBCPolyline(latlngs) {
+    this.bcPolyline.setLatLngs(latlngs);
   }
 }

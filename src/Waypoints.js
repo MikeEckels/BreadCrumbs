@@ -4,6 +4,11 @@ export class WaypointManager {
   constructor(mapController) {
     this.map = mapController;
     this.list = [];
+    this.bcList = [];
+  }
+
+  _createMarker(lat, lon, options = {}) {
+    return L.marker([lat, lon], options).addTo(this.map.map);
   }
 
   add(lat, lon) {
@@ -50,7 +55,7 @@ export class WaypointManager {
     if (this.onListChanged) this.onListChanged();
   }
 
-  importData(arr) {
+  importLantern(arr) {
     this.list.forEach(w => this.map.map.removeLayer(w.marker));
     this.list = [];
 
@@ -62,6 +67,41 @@ export class WaypointManager {
     });
 
     this.update();
+  }
+
+  importBC(arr) {
+    this.bcList.forEach(w => this.map.map.removeLayer(w.marker));
+    this.bcList = [];
+
+    const latlngs = [];
+
+    arr.forEach(d => {
+      const wp = {
+        name: d.name || "",
+        hint: d.hint || "",
+        lat: d.lat,
+        lon: d.lon
+      };
+
+      const marker = L.circleMarker([wp.lat, wp.lon], {
+        radius: 4,
+        color: "#ff8800",
+        fillColor: "#ff8800",
+        fillOpacity: 0.9
+      }).addTo(this.map.map);
+
+      wp.marker = marker;
+      this.bcList.push(wp);
+      latlngs.push([wp.lat, wp.lon]);
+    });
+
+    this.map.updateBCPolyline(latlngs);
+  }
+
+  clearBC() {
+    this.bcList.forEach(w => this.map.map.removeLayer(w.marker));
+    this.bcList = [];
+    this.map.updateBCPolyline([]);
   }
 
   exportData() {

@@ -124,3 +124,10 @@ html,body{
 .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:8px }
 .modal-actions .save{ background:#166534; border-color:#14532d; color:#eaffea }
 .modal-actions .cancel{ background:#7f1d1d; border-color:#701a1a; color:#ffecec }
+
+.hint-counter {
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+  margin-top: 4px;
+}
