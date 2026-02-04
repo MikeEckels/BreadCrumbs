@@ -12,9 +12,17 @@ html,body{
   background:var(--bg);
   color:var(--text);
   font-family:sans-serif;
-  overflow:hidden
+  overflow:hidden;
 }
-#map{height:100%; width:100%}
+#map{height:100%; width:100%;}
+
+.leaflet-container.leaflet-grab {
+  cursor: pointer;
+}
+
+.leaflet-dragging .leaflet-container {
+  cursor: grabbing !important;
+}
 
 .top-buttons{
   position:absolute;
@@ -35,6 +43,65 @@ html,body{
   font-size:14px;
 }
 .top-buttons button:hover{ background:#3a3a3a; }
+
+.search-box {
+  align-items: center;
+  position: relative;
+  display: flex;
+  gap: 8px;
+  background: var(--panel);
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  transition:right 0.3s ease;
+}
+
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1001;
+  display: none;
+}
+
+.search-suggestions div {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.search-suggestions div:hover {
+  background: #3a3a3a;
+}
+
+.search-box input {
+  width: 240px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1e1e1e;
+  color: var(--text);
+}
+
+.search-box button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #2a2a2a;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.search-box button:hover {
+  background: #3a3a3a;
+}
 
 .sidebar{
   position:absolute;

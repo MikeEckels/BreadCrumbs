@@ -10,6 +10,51 @@ export class UIController {
     this.sideList = document.getElementById("sidebarList");
     this.topBtns = document.getElementById("topBtns");
 
+    this.searchInput = document.getElementById("searchInput");
+    this.searchBtn = document.getElementById("searchBtn");
+    this.searchBox = this.searchInput.closest(".search-box");
+    this.lastSuggestions = [];
+
+    if (this.searchInput && this.searchBtn) {
+      this.searchBtn.onclick = () => {
+        this.search();
+        this.searchInput.blur();
+      }
+      this.searchInput.onkeydown = e => {
+        if (e.key === "Enter") {
+          this.search();
+          this.searchInput.blur();
+        }
+      };
+
+      let autocompleteTimeout;
+
+      this.searchInput.addEventListener("input", () => {
+        clearTimeout(autocompleteTimeout);
+        const query = this.searchInput.value.trim();
+        if (!query) {
+          this.hideSuggestions();
+          return;
+        }
+
+        autocompleteTimeout = setTimeout(async () => {
+          const suggestions = await this.map.searchPlace(query);
+          this.lastSuggestions = suggestions;
+          this.showSuggestions(suggestions);
+        }, 300);
+      });
+
+      this.searchInput.addEventListener("blur", () => {
+        setTimeout(() => this.hideSuggestions(), 150);
+      });
+
+      this.searchInput.addEventListener("focus", () => {
+        if (this.lastSuggestions.length > 0) {
+          this.showSuggestions(this.lastSuggestions);
+        }
+      });
+    }
+
     waypoints.onListChanged = () => this.render();
     waypoints.onEditRequested = i => modal.open(i);
 
@@ -89,6 +134,67 @@ export class UIController {
     if (!this.map.currentMarker) return;
     const inView = this.map.map.getBounds().contains(this.map.currentMarker.getLatLng());
     btn.style.display = inView ? "none" : "inline-block";
+  }
+
+  async search() {
+    this.hideSuggestions();
+    const q = this.searchInput.value.trim();
+    if (!q) return;
+
+    const result = await this.map.searchPlace(q, 10);
+    if (!result.length) {
+      alert("No results found");
+      return;
+    }
+
+    const item = result[0];
+    const lat = parseFloat(item.lat);
+    const lon =parseFloat(item.lon);
+
+    if (isNaN(lat) || isNaN(lon)) return;
+
+    if (this.map.searchMarker)
+      this.map.map.removeLayer(this.map.searchMarker);
+
+    this.map.searchMarker = L.marker([lat, lon]).addTo(this.map.map).bindPopup(item.name).openPopup();
+    this.map.map.setView([lat, lon], 15);
+  }
+
+  showSuggestions(list) {
+    const container = this.searchBox.querySelector(".search-suggestions");
+    container.innerHTML = "";
+    if (!list.length) {
+      container.style.display = "none";
+      return;
+    }
+
+    list.forEach(item => {
+      const div = document.createElement("div");
+      div.textContent = item.name;
+      div.addEventListener("mousedown", e => {
+        e.preventDefault();
+        this.selectSuggestion(item);
+        this.hideSuggestions();
+        this.searchInput.blur();
+      });
+      container.appendChild(div);
+    });
+    container.style.display = "block";
+  }
+
+  hideSuggestions() {
+    const container = this.searchBox.querySelector(".search-suggestions");
+    container.style.display = "none";
+  }
+
+  selectSuggestion(item) {
+    this.hideSuggestions();
+
+    if (this.map.searchMarker)
+      this.map.map.removeLayer(this.map.searchMarker);
+
+    this.map.searchMarker = window.L.marker([item.lat, item.lon]).addTo(this.map.map).bindPopup(item.name).openPopup();
+    this.map.map.setView([item.lat, item.lon], 15);
   }
 
   render() {

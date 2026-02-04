@@ -1,6 +1,7 @@
 export class MapController {
   constructor() {
     this.map = L.map("map").setView([0, 0], 2);
+    this.searchMarker = null;
 
     const satellite = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -27,7 +28,7 @@ export class MapController {
   }
 
   setupGeolocation() {
-    this.map.locate({ setView: true, maxZoom: 16, watch: true });
+    this.map.locate({ setView: false, maxZoom: 16, watch: true });
 
     this.map.on("locationfound", e => {
       if (!this.currentMarker) {
@@ -45,6 +46,9 @@ export class MapController {
           weight: 1,
           fillOpacity: 0.1
         }).addTo(this.map);
+
+        this.map.setView(e.latlng, 16);
+
       } else {
         this.currentMarker.setLatLng(e.latlng);
         this.accuracyCircle.setLatLng(e.latlng).setRadius(e.accuracy);
@@ -58,5 +62,26 @@ export class MapController {
 
   updateBCPolyline(latlngs) {
     this.bcPolyline.setLatLngs(latlngs);
+  }
+
+  async searchPlace(query, limit = 10) {
+    const url = 'https://nominatim.openstreetmap.org/search?' +
+      new URLSearchParams({q: query, format: "jsonv2", limit});
+    
+    const res = await fetch(url, {
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "BreadCrumbs/1.0"
+      }
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    return data.map(d => ({
+      name: d.display_name,
+      lat: parseFloat(d.lat),
+      lon: parseFloat(d.lon)
+    }));
   }
 }
