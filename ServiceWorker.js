@@ -1,18 +1,19 @@
-const CACHE_NAME = "breadCrumbs-v1";
+const CACHE_NAME = "breadCrumbs-v2";
+const BASE_PATH = "/BreadCrumbs/";
 
 const APP_ASSETS = [
-    "/",
-    "/index.html",
-    "/manifest.json",
-    "/styles/style.css",
-    "/src/Main.js",
-    "/src/Map.js",
-    "/src/UserInterface.js",
-    "/src/Waypoints.js",
-    "/src/Modal.js",
-    "/src/Utils.js",
-    "/icons/icon-192.png",
-    "/icons/icon-512.png",
+    BASE_PATH,
+    BASE_PATH + "index.html",
+    BASE_PATH + "manifest.json",
+    BASE_PATH + "styles/style.css",
+    BASE_PATH + "src/Main.js",
+    BASE_PATH + "src/Map.js",
+    BASE_PATH + "src/UserInterface.js",
+    BASE_PATH + "src/Waypoints.js",
+    BASE_PATH + "src/Modal.js",
+    BASE_PATH + "src/Utils.js",
+    BASE_PATH + "icons/icon-192.png",
+    BASE_PATH + "icons/icon-512.png",
     "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
     "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ];
@@ -33,9 +34,10 @@ self.addEventListener("fetch", event => {
 
     const url = new URL(request.url);
     if (url.hostname.includes("tile.openstreetmap.org") ||
-        url.hostname.includes("nominatim.openstreetmap.org") ||
-        url.protocol === "geo:" ||
-        url.protocol.startsWith("http")){ return; }
+        url.hostname.includes("nominatim.openstreetmap.org")
+    ){ return; }
+
+    if (!url.pathname.startsWith(BASE_PATH)) { return; }
 
     event.respondWith(caches.match(request).then(cached => {
         return cached || fetch(request);

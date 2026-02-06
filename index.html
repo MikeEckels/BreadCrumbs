@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="/BreadCrumbs/">
   <meta charset="utf-8"/>
   <title>BreadCrumbs</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#1e1e1e">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/BreadCrumbs/manifest.json">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <link rel="stylesheet" href="/styles/style.css"/>
+  <link rel="stylesheet" href="/BreadCrumbs/styles/style.css"/>
 </head>
 <body>
 
@@ -51,11 +52,11 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="/src/Main.js"></script>
+  <script type="module" src="/BreadCrumbs/src/Main.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/ServiceWorker.js", {scope: "/"})
+        navigator.serviceWorker.register("/BreadCrumbs/ServiceWorker.js", {scope: "/BreadCrumbs/"})
         .then(reg => console.log("Service worker registered", reg.scope))
         .catch(err => console.error("Service worker registration failed", err));
       });

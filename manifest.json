@@ -1,20 +1,20 @@
 {
     "name": "BreadCrumbs",
     "short_name": "BreadCrumbs",
-    "description": "Waypoint mapping tool for reverse geocache (Lantern)",
-    "start_url": "./index.html",
-    "scope": "./",
+    "description": "A minimalistic waypoint map generator for a reverse geocache puzzle box(Lantern)",
+    "start_url": "/BreadCrumbs/",
+    "scope": "/BreadCrumbs/",
     "display": "standalone",
     "background_color": "#1e1e1e",
     "theme_color": "#1e1e1e",
     "icons": [
         {
-            "src": "icons/icon-192.png",
+            "src": "/BreadCrumbs/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "icons/icon-512.png",
+            "src": "/BreadCrumbs/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
         }
