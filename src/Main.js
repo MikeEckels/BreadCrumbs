@@ -10,4 +10,7 @@ const modal = new Modal(waypoints);
 new UIController(map, waypoints, modal);
 
 // -Hover menu on wp to show other metrics
-// -Load without LiveServer
+// -Custom marker for searched locations
+// -Move servieWorker?
+// -Serial menu to load waypoints
+// -Phone/App method? Use phone gps/smarts. Only send wireless signal to unlock box

@@ -1,4 +1,4 @@
-const CACHE_NAME = "breadCrumbs-v2";
+const CACHE_NAME = "breadCrumbs-v2.1";
 const BASE_PATH = "/BreadCrumbs/";
 
 const APP_ASSETS = [

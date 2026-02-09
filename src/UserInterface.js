@@ -6,6 +6,9 @@ export class UIController {
     this.waypoints = waypoints;
     this.modal = modal;
 
+    this.menu = document.getElementById("actionMenu");
+    this.sidebarToggle = document.getElementById("toggleSidebar");
+    this.sidebarClose = document.getElementById("closeSidebarBtn");
     this.sidebar = document.getElementById("sidebar");
     this.sideList = document.getElementById("sidebarList");
     this.topBtns = document.getElementById("topBtns");
@@ -66,10 +69,34 @@ export class UIController {
   }
 
   wireButtons() {
-    document.getElementById("toggleSidebar").onclick = () => {
-      this.sidebar.classList.toggle("open");
-      this.topBtns.style.right = this.sidebar.classList.contains("open") ? "370px" : "10px";
+    this.sidebarToggle.onclick = () => {
+      this.sidebar.classList.add("open");
+      document.querySelector('.top-bar-movable').style.right = "325px";
     };
+
+    this.sidebarClose.onclick = () => {
+      this.sidebar.classList.remove("open");
+      document.querySelector('.top-bar-movable').style.right = "0px";
+    };
+
+    document.getElementById("actionToggle").onclick = (e) => {
+      e.stopPropagation();
+       this.menu.classList.toggle("open");
+    };
+
+    document.addEventListener("click", () => {
+      this.menu.classList.remove("open");
+    });
+
+    this.menu.querySelector(".action-dropdown").addEventListener("click", e => {
+      e.stopPropagation();
+    })
+
+    this.menu.querySelectorAll(".action-dropdown button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        this.menu.classList.remove("open");
+      });
+    });
 
     document.getElementById("recenterBtn").onclick = () => {
       if (this.map.currentMarker)

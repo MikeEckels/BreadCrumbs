@@ -4,7 +4,7 @@
   <base href="/BreadCrumbs/">
   <meta charset="utf-8"/>
   <title>BreadCrumbs</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <meta name="theme-color" content="#1e1e1e">
   <link rel="manifest" href="/BreadCrumbs/manifest.json">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -14,23 +14,35 @@
 
   <div id="map"></div>
 
-  <div class="top-buttons" id="topBtns">
-    <div class="search-box">
-      <input id="searchInput" type="text" placeholder="Search..."/>
-      <div class="search-suggestions"></div>
-      <button id="searchBtn">Search</button>
-    </div>
+  <div class="top-bar-container">
+    <div class="top-bar-movable">
+      <div class="top-bar" id="topBtns">
+        <div class="search-box">
+          <input id="searchInput" type="text" placeholder="Search..."/>
+          <div class="search-suggestions"></div>
+          <button id="searchBtn">Search</button>
+        </div>
 
-    <button id="importBC">Import BreadCrumbs</button>
-    <button id="clearBC">Clear BreadCrumbs</button>
-    <button id="importLantern">Import Lantern</button>
-    <button id="exportBtn">Export Lantern</button>
-    <button id="recenterBtn" style="display:none;">Re-center</button>
-    <button id="toggleSidebar">☰ Waypoint List</button>
+        <div class="action-menu" id="actionMenu">
+          <button id="actionToggle">⋮ Options</button>
+          <div class="action-dropdown">
+            <button id="importBC">Import BreadCrumbs</button>
+            <button id="clearBC">Clear BreadCrumbs</button>
+            <button id="importLantern">Import Lantern</button>
+            <button id="exportBtn">Export Lantern</button>
+            <button id="recenterBtn" style="display:none;">Re-center</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button id="toggleSidebar" class="top-bar-standalone">☰</button>
   </div>
 
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header"><h2>Waypoints</h2></div>
+    <div class="sidebar-header">
+      <h2>Waypoints</h2>
+      <button id="closeSidebarBtn" class="close-sidebar">✕</button>
+    </div>
     <div id="sidebarList" aria-live="polite"></div>
   </aside>
 
